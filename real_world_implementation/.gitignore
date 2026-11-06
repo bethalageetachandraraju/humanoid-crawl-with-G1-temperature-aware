@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+build/
+controller/logs/
+analysis/plots_*/
+analysis/session*/
+# The repo ignores *.npz (training logs); here they are needed: the robot
+# computer runs the policies from the bundle's .npz weights, and example_logs/.
+!*.npz

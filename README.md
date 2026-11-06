@@ -26,6 +26,22 @@ braces lock the wrists and extend them into rounded feet.
 The real G1 crawling with the sim-trained policies.
 The videos are re-encoded (720p and 540p H.264, no audio) to keep the repo small.
 
+The robot runs the policies with
+[`real_world_implementation/`](real_world_implementation/README.md): one
+controller with its own safety layer (thermal guard, late-step stop, tilt and
+joint-speed stops, logging), used in two ways:
+
+- **Laptop over Ethernet:** the controller runs on a laptop wired to the robot,
+  driven from the keyboard (or the remote).
+- **Onboard:** the same controller packaged for the G1's own computer (Python 3.8,
+  numpy only, nothing installed system-wide), driven by the Unitree remote, no
+  cable.
+
+The runs logged so far used bundle v3, which ships in that folder. Its README is
+also the contract between training and the robot: observation layouts, gains, the
+target clamp, the export format, the log format, and what the hardware showed
+that training should account for.
+
 ## Motion sequence (simulation, real time)
 
 | Walk -> stand-to-crawl | Crawl: creepy (default) |
@@ -46,6 +62,7 @@ These are rendered from the deploy bundle with the same CPU loop the robot lapto
 | `deploy/sim2sim_chain_cpu.py` | standalone sim-to-sim of the whole chain: CPU MuJoCo + onnxruntime, built from the bundle alone |
 | `deploy/thermal_guard.py` | motor-temperature guard for the real controller (numpy) |
 | `deploy/VERSIONS.md` | bundle history and alternate checkpoints |
+| `real_world_implementation/` | sim-to-real: the robot controller and its safety layer, the robot-tested v3 bundle, the onboard packager, log analysis, and a README with both ways to run it (laptop over Ethernet, or onboard with the Unitree remote) |
 | `checkpoints/` | the PyTorch checkpoints behind the ONNX files |
 | `training/` | the mjlab tasks, rewards, thermal model and scripts (an overlay on mjlab) |
 | `hardware/wrist_brace/` | STL files to print the wrist braces + forearm extensions, with the bolt list |
@@ -146,10 +163,12 @@ with the heat model doubled to match the real knee and a 30 C room:
 scuttle crawl peaks at 107 C when it is driven at 0.5-1 m/s for 6 min straight, so use
 it for short fast stretches, not long runs.*
 
-![per-motor temperatures of the old chain over the same session](media/images/heat_session_37min_old_per_motor.png)
-
-*Where the old chain's heat came from: both shoulder rolls and the waist yaw, which
-held a steady load while crawling and resting. The knees stayed near 60 C.*
+*Values above 85 C are not temperatures a motor reaches. This estimate
+(`training/scripts/mission_thermal.py`) has no cut-off: it keeps adding the heat of
+whatever torque the policy asks for. On the robot the controller stops at 85 C (the
+10-29 runs hit it within 30-40 s), and the motor drivers have their own
+over-temperature cut-out (modelled at 105 C). A curve far above 85 C means the load
+cannot be held, not that the motor would get that hot.*
 
 On the robot, `deploy/thermal_guard.py` watches both temperature readings of every
 motor: warn at 65 C; at 72 C (or faster than 1 C/s above 55 C) on the crawl side it
@@ -191,8 +210,18 @@ pip install pillow imageio-ffmpeg matplotlib
 MUJOCO_GL=egl python tools/render_chain_media.py --out media/sim/full_chain_creepy
 ```
 
-**On the real robot:** start on a gantry or harness, 8 s transitions, the thermal guard
-on, and someone at the e-stop. Use low-level mode with the built-in controller released.
+**On the real robot:** use [`real_world_implementation/`](real_world_implementation/README.md).
+Its README covers setup, both modes, the operator procedure and the tests to pass
+first. Always start on a gantry or harness, with 8 s transitions, the thermal guard on
+and someone at the e-stop; the controller releases the built-in controller and runs in
+low-level mode.
+
+```bash
+cd real_world_implementation
+python controller/check_robot.py                                        # read-only readiness check
+python controller/g1_chain_real.py --real --net enp3s0 --wrists braced  # laptop over Ethernet
+python controller/tools/make_onboard_package.py                         # onboard: builds build/g1_onboard
+```
 
 ## Training
 

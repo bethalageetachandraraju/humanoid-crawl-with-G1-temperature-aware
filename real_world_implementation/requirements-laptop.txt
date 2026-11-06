@@ -1,0 +1,9 @@
+# Mode A (laptop over Ethernet) and the offline tests. Python 3.10 tested
+# (conda env asap_deploy: numpy 1.26.4, onnxruntime 1.20.1, mujoco 3.3.4).
+# Then: pip install --no-deps -e controller/third_party/unitree_sdk2_python
+numpy>=1.17
+cyclonedds==0.10.2      # the version Unitree's SDK and the robot use
+onnxruntime>=1.16       # optional: the controller falls back to the bundle's .npz weights
+mujoco>=3.3             # sim2sim_mujoco.py, sim_bridge.py, replay_log.py (make_sim_model.py: >=3.5)
+matplotlib              # analysis/
+# replay_log.py --video also needs: mediapy imageio-ffmpeg pillow
