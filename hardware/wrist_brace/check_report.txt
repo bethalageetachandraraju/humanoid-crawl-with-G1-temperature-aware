@@ -1,0 +1,10 @@
+inputs: left_A_cap_v2.stl, left_B_carrier_v2.stl; dropped 12 / 19 zero-volume stray triangles, fixed the winding of 54 / 0 inverted triangles
+wrist-roll joint x = -93.20, flange x = 32.30, end face x = 53.50, tip x = 132.30
+add-on length past your end face 78.80 mm: blend 5.0, cylinder 48.80, dome R25.0
+wrist-roll joint to tip 225.50 mm (simulation 225.5)
+end-face outline radius 24.93..29.76 mm
+nose bolts (M3 x 30 socket head + 9 mm washer + nyloc) at x = 68.0, 98.0, z = 0
+body bolts (M3 x 40 socket head + 9 mm washer + nyloc), nut seat at |y| = 20.5: (x, z) = (-74.2, -32.0), (-74.2, 32.0), (-33.2, -32.5), (-33.2, 32.5), (47.3, -18.0), (47.3, 18.0)
+A: left_A_cap_v2_ext.stl  watertight True  volume 154.63 -> 221.86 cm3  original surface moved max 0.0000 mm  bounds y 0.11..41.79 (was 0.11..41.79) z -39.97..39.97 (was -39.97..39.97) x -83.20..132.30
+B: left_B_carrier_v2_ext.stl  watertight True  volume 161.38 -> 228.35 cm3  original surface moved max 0.0000 mm  bounds y -41.71..0.01 (was -41.71..0.01) z -39.96..39.96 (was -39.96..39.96) x -83.20..132.30
+seam gap between the halves 0.09 mm (yours: 0.09)
