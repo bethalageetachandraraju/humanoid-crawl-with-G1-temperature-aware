@@ -14,6 +14,16 @@ forward), crawl -> stand, walk. Full-length video: [creepy crawl](media/sim/full
 
 ![key frames](media/images/chain_keyframes.png)
 
+## On the real robot
+
+| Crawl, recorded 2026-10-30 (2x speed) | Crawl in the sun (2.5x speed) |
+|---|---|
+| ![real G1 crawl](media/real/real_crawl_2026-10-30.gif) | ![real G1 crawl in the sun](media/real/real_crawl_sunny.gif) |
+| [full video, 26 s (MP4)](media/real/real_crawl_2026-10-30.mp4) | [full video, 50 s (MP4)](media/real/real_crawl_sunny.mp4) |
+
+The real G1 crawling with the sim-trained policies.
+The videos are re-encoded (720p and 540p H.264, no audio) to keep the repo small.
+
 ## Motion sequence (simulation, real time)
 
 | Walk -> stand-to-crawl | Crawl: creepy (default) |
