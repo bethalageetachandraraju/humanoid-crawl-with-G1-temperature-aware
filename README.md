@@ -26,21 +26,10 @@ braces lock the wrists and extend them into rounded feet.
 The real G1 crawling with the sim-trained policies.
 The videos are re-encoded (720p and 540p H.264, no audio) to keep the repo small.
 
-The robot runs the policies with
-[`real_world_implementation/`](real_world_implementation/README.md): one
-controller with its own safety layer (thermal guard, late-step stop, tilt and
-joint-speed stops, logging), used in two ways:
-
-- **Laptop over Ethernet:** the controller runs on a laptop wired to the robot,
-  driven from the keyboard (or the remote).
-- **Onboard:** the same controller packaged for the G1's own computer (Python 3.8,
-  numpy only, nothing installed system-wide), driven by the Unitree remote, no
-  cable.
-
-The runs logged so far used bundle v3, which ships in that folder. Its README is
-also the contract between training and the robot: observation layouts, gains, the
-target clamp, the export format, the log format, and what the hardware showed
-that training should account for.
+The robot runs them with
+[`real_world_implementation/`](real_world_implementation/README.md), either from a
+laptop over Ethernet or onboard with the Unitree remote. See
+[Real robot testing](#real-robot-testing).
 
 ## Motion sequence (simulation, real time)
 
@@ -210,18 +199,54 @@ pip install pillow imageio-ffmpeg matplotlib
 MUJOCO_GL=egl python tools/render_chain_media.py --out media/sim/full_chain_creepy
 ```
 
-**On the real robot:** use [`real_world_implementation/`](real_world_implementation/README.md).
-Its README covers setup, both modes, the operator procedure and the tests to pass
-first. Always start on a gantry or harness, with 8 s transitions, the thermal guard on
-and someone at the e-stop; the controller releases the built-in controller and runs in
-low-level mode.
+For the real robot, see [Real robot testing](#real-robot-testing).
+
+# Real robot testing
+
+`real_world_implementation/` runs the chain on the G1 in two ways:
+
+- **from a laptop over Ethernet**, driven from the keyboard;
+- **onboard, on the G1's own computer**, driven by the Unitree remote, no cable.
+
+Both use the same controller with the safety layer on: thermal guard, tilt,
+joint-speed and late-step stops, and logging. The runs so far used bundle v3,
+which ships in that folder.
+
+**Before you start:**
+- the robot hangs on a gantry or harness;
+- the braces and forearm extensions are on, and the waist is unlocked;
+- someone is ready on the e-stop.
 
 ```bash
 cd real_world_implementation
-python controller/check_robot.py                                        # read-only readiness check
-python controller/g1_chain_real.py --real --net enp3s0 --wrists braced  # laptop over Ethernet
-python controller/tools/make_onboard_package.py                         # onboard: builds build/g1_onboard
+pip install -r requirements-laptop.txt
+pip install --no-deps -e controller/third_party/unitree_sdk2_python
+
+# 1. checks, no robot needed
+python controller/check_robot.py
+python bundles/g1_chain_v3/sim2sim_mujoco.py --test all
+
+# 2. laptop over Ethernet (laptop wired to the robot, address 192.168.123.x)
+python controller/g1_chain_real.py --real --net enp3s0 --monitor        # read-only
+python controller/g1_chain_real.py --real --net enp3s0 --wrists braced  # run
+
+# 3. onboard (G1 computer, Unitree remote)
+python controller/tools/make_onboard_package.py
+scp -r build/g1_onboard unitree@192.168.123.164:~/
+#    then on the robot:  cd ~/g1_onboard && ./build_vendor.sh   (first time only)
+#                        cd ~/g1_onboard && NET=eth0 ./run_robot.sh
 ```
+
+| | Keyboard (laptop) | Remote (onboard) |
+|---|---|---|
+| stand up slowly (still hanging) | `1` | Start |
+| start the policies (feet carrying the weight) | `2` | R1 + X |
+| move | `w` `s` `a` `d` `q` `e` (+0.1 each), `x` stop | left / right stick |
+| walk → crawl / crawl → stand | `c` / `u` | R1 + Down / R1 + Up |
+| **damping (e-stop)** | **Space** | **B** or **F1** |
+
+Logs are saved to `real_world_implementation/controller/logs/` (copy them back
+from the robot's `~/g1_onboard/logs/`).
 
 ## Training
 
@@ -270,3 +295,12 @@ the wrist-roll joint, the same geometry the policies were trained with.
 - [MuJoCo](https://github.com/google-deepmind/mujoco), [RSL-RL](https://github.com/leggedrobotics/rsl_rl).
 
 Author: [@bethalageetachandraraju](https://github.com/bethalageetachandraraju)
+
+## Disclaimer
+
+Running these policies on a real G1 can damage the robot or hurt people.
+**Before any real-robot test, read
+[`real_world_implementation/README.md`](real_world_implementation/README.md) in
+full**: the operator procedure, the safety stops, and the tests to pass first.
+Always start on a gantry or harness with someone on the e-stop. Use at your own
+risk.
