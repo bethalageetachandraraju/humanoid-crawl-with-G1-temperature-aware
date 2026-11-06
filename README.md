@@ -6,11 +6,13 @@ RSL-RL PPO) against a model of motor heating, so the robot can hold and crawl wi
 tripping the motors' thermal cut-off. The forearms are the front legs: 3D-printed wrist
 braces lock the wrists and extend them into rounded feet.
 
-![full chain in simulation, 3x speed](media/sim/full_chain_creepy_3x.gif)
+| Full chain, creepy crawl (3x speed) | Full chain, scuttle crawl (3x speed) |
+|---|---|
+| ![full chain with the creepy crawl, 3x speed](media/sim/full_chain_creepy_3x.gif) | ![full chain with the scuttle crawl, 3x speed](media/sim/full_chain_scuttle_3x.gif) |
+| [full video, 45 s (MP4)](media/sim/full_chain_creepy.mp4) | [full video, 46 s (MP4)](media/sim/full_chain_scuttle.mp4) |
 
-*Whole sequence in MuJoCo, 3x speed: walk, stop, stand -> crawl, crawl (forward, turn,
-forward), crawl -> stand, walk. Full-length video: [creepy crawl](media/sim/full_chain_creepy.mp4),
-[scuttle crawl](media/sim/full_chain_scuttle.mp4).*
+*The whole sequence in MuJoCo with each crawl style: walk, stop, stand -> crawl, crawl
+(forward, turn, forward), crawl -> stand, walk.*
 
 ![key frames](media/images/chain_keyframes.png)
 
@@ -131,6 +133,23 @@ still hold in the crawl, crawling, crawl -> stand and walk (motor model, passive
 25 C ambient). The chain that overheated on the robot (v2, trot crawl) peaks at 48 C on
 a shoulder roll; this release peaks at 31 C. The real motors heated about 2x faster than
 the model, so read these as relative numbers.*
+
+A longer session tells the same story. Five rounds of walking 1 min, going down,
+crawling 6 min at 0.2-0.5 m/s (scuttle at 0.5-1 m/s), and standing up, 37 min in all,
+with the heat model doubled to match the real knee and a 30 C room:
+
+![hottest motor over a 37 min session, old vs new crawls](media/images/heat_session_37min_old_vs_new.png)
+
+*Hottest motor winding over the session (motor model x2, 30 C room, plot capped at
+140 C). The chain deployed on 10-29 runs away within minutes (the model's peak is
+283 C). The creepy crawl, the default, settles under the 70 C target (peak 64 C). The
+scuttle crawl peaks at 107 C when it is driven at 0.5-1 m/s for 6 min straight, so use
+it for short fast stretches, not long runs.*
+
+![per-motor temperatures of the old chain over the same session](media/images/heat_session_37min_old_per_motor.png)
+
+*Where the old chain's heat came from: both shoulder rolls and the waist yaw, which
+held a steady load while crawling and resting. The knees stayed near 60 C.*
 
 On the robot, `deploy/thermal_guard.py` watches both temperature readings of every
 motor: warn at 65 C; at 72 C (or faster than 1 C/s above 55 C) on the crawl side it
